@@ -15,6 +15,12 @@
   <name>Server</name>
   <description>Logic.</description>
 
+  <!-- DODANE: ustawienie wersji Javy -->
+  <properties>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+  </properties>
+
   <build>
     <finalName>${project.artifactId}</finalName>
   </build>
@@ -32,7 +38,7 @@
       <scope>test</scope>
     </dependency>
 
-    <dependency> 
+    <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-library</artifactId>
       <scope>test</scope>

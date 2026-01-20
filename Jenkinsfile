@@ -1,9 +1,11 @@
 pipeline {
     agent { label 'Jenkins-Agent' }
+
     tools {
         jdk 'Java21'
         maven 'Maven3'
     }
+
     stages {
         stage("Cleanup Workspace") {
             steps {
@@ -13,7 +15,9 @@ pipeline {
 
         stage("Checkout from SCM") {
             steps {
-                git branch: 'main', credentialsId: 'github', url: 'https://github.com/MakowkaM/deploy-to-k8-s-by-jenkins'
+                git branch: 'main',
+                    credentialsId: 'github',
+                    url: 'https://github.com/MakowkaM/deploy-to-k8-s-by-jenkins'
             }
         }
 
@@ -28,12 +32,11 @@ pipeline {
                 sh "mvn test"
             }
         }
+
         stage("SonarQube Analysis") {
             steps {
-                script {
-                    withSonarQubeEnv(credentialsId: 'jenkins-sonarqube-token') {
-                        sh "mvn sonar:sonar"
-                    }
+                withSonarQubeEnv('SonarQube') {
+                    sh "mvn clean verify sonar:sonar"
                 }
             }
         }

@@ -5,6 +5,7 @@ pipeline {
         jdk 'Java21'
         maven 'Maven3'
     }
+    
     environment {
         APP_NAME = "register-app-pipeline"
         RELEASE = "1.0.0"
@@ -13,6 +14,7 @@ pipeline {
         IMAGE_NAME = "${DOCKER_USER}" + "/" + "${APP_NAME}"
         IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
     }
+    
 
     stages {
         stage("Cleanup Workspace") {
@@ -20,6 +22,7 @@ pipeline {
                 cleanWs()
             }
         }
+        
 
         stage("Checkout from SCM") {
             steps {
@@ -28,18 +31,21 @@ pipeline {
                     url: 'https://github.com/MakowkaM/deploy-to-k8-s-by-jenkins'
             }
         }
+        
 
         stage("Build Application") {
             steps {
                 sh "mvn clean package"
             }
         }
+        
 
         stage("Test Application") {
             steps {
                 sh "mvn test"
             }
         }
+        
 
         stage("SonarQube Analysis") {
             steps {
@@ -48,6 +54,8 @@ pipeline {
                 }
             }
         }
+
+        
         stage("Quality Gate") {
             steps {
                 script {
@@ -55,6 +63,7 @@ pipeline {
                 }
             }
         }
+        
 
         stage("Build and Push Docker Image") {
             steps {
@@ -66,6 +75,23 @@ pipeline {
                         docker_image.push("${IMAGE_TAG}")
                         docker_image.push('latest')
                     }
+                }
+            }
+        }
+
+        stage("Trivy Scan") {
+           steps {
+               script {
+	            sh ('docker run -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image majkelowski675/register-app-pipeline:latest --no-progress --scanners vuln  --exit-code 0 --severity HIGH,CRITICAL --format table')
+               }
+           }
+        }
+
+        stage('Cleanup Artifacts') {
+            steps {
+                script {
+                    sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG}"
+                    sh "docker rmi ${IMAGE_NAME}:latest"
                 }
             }
         }
